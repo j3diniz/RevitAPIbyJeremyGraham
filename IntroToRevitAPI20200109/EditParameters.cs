@@ -12,7 +12,7 @@ namespace IntroToRevitAPI20200109 {
     [Transaction(TransactionMode.Manual)]
     class EditParameters : IExternalCommand {
         public Result Execute(ExternalCommandData commandData, ref string message, ElementSet elements) {
-			try {
+            try {
                 UIDocument uidoc = commandData.Application.ActiveUIDocument;
 
                 Document doc = uidoc.Document;
@@ -27,7 +27,15 @@ namespace IntroToRevitAPI20200109 {
                     Parameter para = ele.LookupParameter("Head Height");
                     string storage = para.StorageType.ToString();
                     double value = para.AsDouble();
-                    TaskDialog.Show("Parameters", "Parameter is a " + storage + " with value: " + value.ToString());
+                    double newvalue = UnitUtils.ConvertFromInternalUnits(value, DisplayUnitType.DUT_MILLIMETERS);
+                    // TaskDialog.Show("Parameters", "Parameter is a " + storage + " with value: " + newvalue.ToString());
+
+                    double setvalue = UnitUtils.ConvertToInternalUnits(2100, DisplayUnitType.DUT_MILLIMETERS);
+                    using (Transaction tran = new Transaction(doc, "Set Parameter")) {
+                        tran.Start();
+                        para.Set(setvalue);
+                        tran.Commit();
+                    }
                 }
 
                 TaskDialog.Show("Windows", windows.Count + " Windows Found!");
